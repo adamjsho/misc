@@ -1,0 +1,40 @@
+#!/usr/bin/python
+import socket
+import urllib
+import re
+import sys
+
+dest="fr"
+source="en"
+
+def pull(phrase):
+	phrase = urllib.quote(phrase)
+	try:
+		s=socket.socket()
+		s.connect(("translate.google.co.uk",80))
+		s.send("GET /translate_a/t?client=webapp&sl=" + source + "&tl=" + dest + "&hl=en&sc=1&q=" + phrase + " HTTP/1.1")
+		s.send("\n\n")
+		reply = s.recv(1024)
+	except:
+		print "Google says no"
+	
+	return reply
+	
+def parse(reply):
+	reply = reply.split('\n')
+	
+	for line in reply:
+		if re.search('"trans"', line):
+			chunks = line.split('"')
+			return chunks[5]
+
+def main():
+	if len(sys.argv) != 2:
+		print "\n\tUsage: " + sys.argv[0] + " \"string to translate\"\n"
+		sys.exit(1)
+			
+	print "\033[1;91m" + parse(pull(sys.argv[1]))+ "\033[0;39m"
+	
+			
+if __name__ == '__main__':
+	main()
