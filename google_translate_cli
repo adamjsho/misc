@@ -3,11 +3,12 @@ import socket
 import urllib
 import re
 import sys
+import argparse
 
-dest="fr"
-source="en"
+DEST_LANG="fr"
+SOURCE_LANG="en"
 
-def pull(phrase):
+def pull(phrase, source, dest):
 	phrase = urllib.quote(phrase)
 	try:
 		s=socket.socket()
@@ -29,11 +30,13 @@ def parse(reply):
 			return chunks[5]
 
 def main():
-	if len(sys.argv) != 2:
-		print "\n\tUsage: " + sys.argv[0] + " \"string to translate\"\n"
-		sys.exit(1)
-			
-	print "\033[1;91m" + parse(pull(sys.argv[1]))+ "\033[0;39m"
+        parser = argparse.ArgumentParser(description='Google Translate CLI')
+        parser.add_argument('text', nargs='+', help='Profanities you would like to translate')
+        parser.add_argument('--dest', '-d', default=DEST_LANG, help="Language you wish you knew")
+        parser.add_argument('--source', '-s', default=SOURCE_LANG, help="Language you know")
+        args = parser.parse_args()
+        
+	print "\033[1;91m" + parse(pull(' '.join(args.text), args.source, args.dest))+ "\033[0;39m"
 	
 			
 if __name__ == '__main__':
