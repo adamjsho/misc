@@ -30,14 +30,17 @@ def parse(reply):
 			return chunks[5]
 
 def main():
-        parser = argparse.ArgumentParser(description='Google Translate CLI')
+        parser = argparse.ArgumentParser(description='A command line wrapper for Google Translate')
         parser.add_argument('text', nargs='+', help='Profanities you would like to translate')
-        parser.add_argument('--dest', '-d', default=DEST_LANG, help="Language you wish you knew")
-        parser.add_argument('--source', '-s', default=SOURCE_LANG, help="Language you know")
+        parser.add_argument('-s', default=SOURCE_LANG, metavar="source_lang", help="Language you know")
+        parser.add_argument('-d', default=DEST_LANG, metavar="dest_lang", help="Language you wish you knew")
+        parser.add_argument('--switch', '-w', action='store_true', help="Switch the default languages")
         args = parser.parse_args()
-        
-	print "\033[1;91m" + parse(pull(' '.join(args.text), args.source, args.dest))+ "\033[0;39m"
-	
-			
+      	
+	if (args.switch is False):  
+		print "\033[1;91m" + parse(pull(' '.join(args.text), args.s, args.d))+ "\033[0;39m"
+	else: 	
+		print "\033[1;91m" + parse(pull(' '.join(args.text), args.d, args.s))+ "\033[0;39m"
+
 if __name__ == '__main__':
 	main()
