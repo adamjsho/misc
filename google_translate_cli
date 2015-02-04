@@ -1,33 +1,33 @@
 #!/usr/bin/python
-import socket
-import urllib
-import re
+import urllib2
 import sys
 import argparse
+import json
 
 DEST_LANG="fr"
 SOURCE_LANG="en"
 
 def pull(phrase, source, dest):
-	phrase = urllib.quote(phrase)
+	phrase = urllib2.quote(phrase)
 	try:
-		s=socket.socket()
-		s.connect(("translate.google.co.uk",80))
-		s.send("GET /translate_a/t?client=webapp&sl=" + source + "&tl=" + dest + "&hl=en&sc=1&q=" + phrase + " HTTP/1.1")
-		s.send("\n\n")
-		reply = s.recv(1024)
+		opener = urllib2.build_opener()
+		opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+		response = opener.open("http://translate.google.co.uk" + "/translate_a/t?client=webapp&sl=" + source + "&tl=" + dest + "&hl=en&sc=1&q=" + phrase)
+	except urllib2.HTTPError, err:
+		print "ERROR [" + err + "] Google says no"
+		sys.exit(0)
 	except:
-		print "Google says no"
+		print "ERROR [UNKNOWN] Google really says no"
+		sys.exit(0)
+		
+	return json.loads(response.read())
 	
-	return reply
 	
 def parse(reply):
-	reply = reply.split('\n')
-	
-	for line in reply:
-		if re.search('"trans"', line):
-			chunks = line.split('"')
-			return chunks[5]
+	tran = ""
+	for s in reply['sentences']:
+		tran+=s['trans']
+	return tran
 
 def main():
         parser = argparse.ArgumentParser(description='A command line wrapper for Google Translate')
