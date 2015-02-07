@@ -23,10 +23,23 @@ def pull(phrase, source, dest):
 	return json.loads(response.read())
 	
 	
-def parse(reply):
+def parse(log_dir, reply):
 	tran = ""
 	for s in reply['sentences']:
 		tran+=s['trans']
+	
+	if (log_dir != None):
+		try:
+			fd = open(log_dir, 'a')
+		except:
+			print "ERROR [COULD NOT OPEN LOG FILE]"
+			sys.exit(-1);
+			
+		if (fd):
+			fd.write(tran + "\n")		
+		else:
+			print "ERROR [COULD NOT OPEN LOG FILE]"
+			sys.exit(-1);
 	return tran
 
 def main():
@@ -35,12 +48,13 @@ def main():
         parser.add_argument('-s', default=SOURCE_LANG, metavar="source_lang", help="Language you know")
         parser.add_argument('-d', default=DEST_LANG, metavar="dest_lang", help="Language you wish you knew")
         parser.add_argument('--switch', '-w', action='store_true', help="Switch the default languages")
+        parser.add_argument('--log', '-l', metavar="log_file", help="Log to [file]")
         args = parser.parse_args()
-      	
+	
 	if (args.switch is False):  
-		print "\033[1;91m" + parse(pull(' '.join(args.text), args.s, args.d))+ "\033[0;39m"
+		print "\033[1;34m" + parse(args.log, pull(' '.join(args.text), args.s, args.d))+ "\033[0;39m"
 	else: 	
-		print "\033[1;91m" + parse(pull(' '.join(args.text), args.d, args.s))+ "\033[0;39m"
+		print "\033[1;91m" + parse(args.log, pull(' '.join(args.text), args.d, args.s))+ "\033[0;39m"
 
 if __name__ == '__main__':
 	main()
