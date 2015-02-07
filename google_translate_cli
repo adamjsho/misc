@@ -15,31 +15,19 @@ def pull(phrase, source, dest):
 		response = opener.open("http://translate.google.co.uk" + "/translate_a/t?client=webapp&sl=" + source + "&tl=" + dest + "&hl=en&sc=1&q=" + phrase)
 	except urllib2.HTTPError, err:
 		print "ERROR [" + err + "] Google says no"
-		sys.exit(0)
+		sys.exit(-1)
 	except:
 		print "ERROR [UNKNOWN] Google really says no"
-		sys.exit(0)
+		sys.exit(-2)
 		
 	return json.loads(response.read())
 	
 	
-def parse(log_dir, reply):
+def parse(reply):
 	tran = ""
 	for s in reply['sentences']:
 		tran+=s['trans']
 	
-	if (log_dir != None):
-		try:
-			fd = open(log_dir, 'a')
-		except:
-			print "ERROR [COULD NOT OPEN LOG FILE]"
-			sys.exit(-1);
-			
-		if (fd):
-			fd.write(tran + "\n")		
-		else:
-			print "ERROR [COULD NOT OPEN LOG FILE]"
-			sys.exit(-1);
 	return tran
 
 def main():
@@ -50,11 +38,28 @@ def main():
         parser.add_argument('--switch', '-w', action='store_true', help="Switch the default languages")
         parser.add_argument('--log', '-l', metavar="log_file", help="Log to [file]")
         args = parser.parse_args()
+
+	colour="\033[1;91m" # Red
+	colour_default="\033[0;39m"
 	
-	if (args.switch is False):  
-		print "\033[1;34m" + parse(args.log, pull(' '.join(args.text), args.s, args.d))+ "\033[0;39m"
-	else: 	
-		print "\033[1;91m" + parse(args.log, pull(' '.join(args.text), args.d, args.s))+ "\033[0;39m"
+	original = ' '.join(args.text)
+
+	if (args.switch is False): 
+		colour="\033[1;34m" # Blue 
+		args.s, args.d = args.d, args.s	
+		
+	translation = parse(pull(original, args.d, args.s))
+
+	if (args.log != None):
+		try:
+			fd = open(args.log, 'a')
+		except:
+			print "ERROR [FAILED TO OPEN FILE]"
+			sys.exit(-3);
+	
+		fd.write(original + " -> " + translation + "\n")		
+
+	print colour + translation + colour_default
 
 if __name__ == '__main__':
 	main()
