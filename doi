@@ -1,0 +1,77 @@
+#!/bin/bash
+# Directory of Interest -- doi
+# Adam Shore 2015/12/28
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+BASE_DIR="$HOME/.doi/"
+DATABASE="doi"
+DATABASE_PATH=${BASE_DIR}${DATABASE}
+
+
+# print usage
+function usage {
+	echo "Usage:"
+	echo "     $0 -r                  # restore path"
+	echo "     $0 -s /home/foobar     # set path "
+	exit 1
+}
+
+# Check for required exist
+if [ ! -f ~/$DATABASE_PATH ]; then
+	if [ ! -f $BASE_DIR ]; then
+		mkdir -p $BASE_DIR
+	fi
+	touch $DATABASE_PATH
+fi
+
+# If 0 arguments provided, show usage
+if [ $# -eq 0 ]; then
+	usage
+fi
+
+# If -s provided, run set routines
+if [ $1 == "-s" ]; then
+	if [ ! $# -eq 2 ]; then
+		usage
+	fi
+    
+    # Evaluate the full directory path
+    save_dir=`realpath $2`
+
+	# If a valid directory, save it.
+	if [ -d $save_dir ]; then
+		echo $save_dir > $DATABASE_PATH
+	else
+		echo "ERROR: not a valid directory"
+		exit 2
+	fi
+
+# If -r provided, run restore routines
+elif [ $1 == "-r" ]; then
+	restore_dir=`cat $DATABASE_PATH`
+	
+	# If the directory is still valid, restore it.
+	if [ -d $restore_dir ]; then
+		cd $restore_dir
+		echo [ $restore_dir ]
+		bash
+	else 
+		echo "ERROR: invalid directory in database"
+	fi
+
+# If unknown option, show usage
+else
+	usage
+fi
